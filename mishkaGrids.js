@@ -3,8 +3,7 @@ var  x, y, a, b;
 function setup() {
   a = windowWidth;
   b = windowHeight;
-  createCanvas(a, b, SVG);
-
+  createCanvas(a, b);
   axisx = a/2;
   axisy = b/2;
   rectMode(CENTER);
@@ -149,7 +148,7 @@ var Controls = function() {
     translate(-axisx,-axisy);
     clear();
     updateGrid();
-    save('mishkaGrid.svg'); 
+    save('mishkaGrid'); 
   }
 }
 var controls= new Controls();
