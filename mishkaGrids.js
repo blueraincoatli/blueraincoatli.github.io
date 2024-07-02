@@ -3,7 +3,7 @@ var  x, y, a, b;
 function setup() {
   a = windowWidth;
   b = windowHeight;
-  createCanvas(a, b); // 使用 SVG 渲染器
+  createCanvas(a, b);
   axisx = a/2;
   axisy = b/2;
   rectMode(CENTER);
@@ -144,12 +144,12 @@ var Controls = function() {
   this.gridBrightness = 100;
   this.picsGrid = true;
   this.layoutGrid = true;
-  this.savePic = function saveMyGrid() {
-    translate(-axisx, -axisy);
+  this.savePic = function saveMyGrid(){
+    translate(-axisx,-axisy);
     clear();
     updateGrid();
-    save('mishkaGrid'); // 指定文件名和扩展名
-  };
+    save('mishkaGrid'); 
+  }
 }
 var controls= new Controls();
 
