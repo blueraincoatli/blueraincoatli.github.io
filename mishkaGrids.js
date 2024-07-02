@@ -4,6 +4,9 @@ function setup() {
   a = windowWidth;
   b = windowHeight;
   createCanvas(a, b, SVG);
+  background(0);
+  fill(150);
+  stroke(150);
   axisx = a/2;
   axisy = b/2;
   rectMode(CENTER);
