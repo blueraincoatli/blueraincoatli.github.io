@@ -27,13 +27,11 @@ function generateSVGString() {
     }
     
     const sw = controls.strokeweight;
-    
-    // 计算中心点和边距
     const margin = 50;
     const totalWidth = w + margin * 2;
     const totalHeight = h + margin * 2;
     
-    // 计算矩形的四个角点（相对于中心点）
+    // 计算矩形的四个角点
     const ax = -w/2;
     const ay = -h/2;
     const bx = w/2;
@@ -43,22 +41,18 @@ function generateSVGString() {
     const dx = -w/2;
     const dy = h/2;
 
-    // 创建 SVG 字符串
+    // 创建 SVG 字符串，添加黑色背景
     let svgString = `
         <svg width="${totalWidth}" height="${totalHeight}" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <style>
-                    .grid-line { stroke-linecap: square; }
-                    svg { background: black; }
-                </style>
-            </defs>
+            <rect width="100%" height="100%" fill="black"/>
             <g transform="translate(${totalWidth/2}, ${totalHeight/2})" fill="none">
     `;
 
     // 主网格
     if(controls.picsGrid) {
+        const picsColor = `hsla(${controls.picsGridHue}, 100%, ${controls.gridBrightness}%, 1)`;
         svgString += `
-            <g class="grid-line" stroke="hsl(${controls.picsGridHue}, 100%, ${controls.gridBrightness}%)" stroke-width="${sw}">
+            <g stroke="${picsColor}" stroke-width="${sw}">
                 <!-- 主矩形 -->
                 <rect x="${ax}" y="${ay}" width="${w}" height="${h}"/>
                 
@@ -83,7 +77,6 @@ function generateSVGString() {
         const fx = dx+((h*h*w)/(h*h+w*w));
         const fy = ay+((h*h*w)/(h*h+w*w))*(h/w);
 
-        // 添加交叉线
         svgString += `
             <!-- 交叉垂直线 -->
             <line x1="${fx}" y1="${ay}" x2="${fx}" y2="${dy}"/>
@@ -92,7 +85,6 @@ function generateSVGString() {
             <line x1="${ax}" y1="${-fy}" x2="${bx}" y2="${-fy}"/>
         `;
 
-        // 根据宽高比添加线条
         if (w/h > 1) {
             svgString += `
                 <line x1="${ax}" y1="${ay}" x2="${ex1}" y2="${dy}"/>
@@ -129,17 +121,30 @@ function generateSVGString() {
 
     // 布局网格
     if(controls.layoutGrid) {
-        const ul = w/h > 1 ? w/50 : h/50;
-        const uw = w/h > 1 ? w-ul*4 : w-ul*2;
-        const uh = w/h > 1 ? (h-ul*7)/6 : (h-ul*9)/6;
-        const uy = w/h > 1 ? (-h/2)+ul+uh/2 : (-h/2)+ul*2+uh/2;
-        const sw = w/h > 1 ? (w-ul*9)/6 : (w-ul*7)/6;
-        const sh = w/h > 1 ? h-ul*2 : h-ul*4;
-        const sx = w/h > 1 ? (-w/2)+ul*2+sw/2 : (-w/2)+ul+sw/2;
+        const layoutColor = `hsla(${controls.layoutGridHue}, 100%, ${controls.gridBrightness}%, 1)`;
+        
+        // 根据宽高比计算网格参数
+        let ul, uw, uh, uy, sw, sh, sx;
+        
+        if (w/h > 1) {
+            ul = w/50;
+            uw = w-ul*4;
+            uh = (h-ul*7)/6;
+            uy = (-h/2)+ul+uh/2;
+            sw = (w-ul*9)/6;
+            sh = h-ul*2;
+            sx = (-w/2)+ul*2+sw/2;
+        } else {
+            ul = h/50;
+            uw = w-ul*2;
+            uh = (h-ul*9)/6;
+            uy = (-h/2)+ul*2+uh/2;
+            sw = (w-ul*7)/6;
+            sh = h-ul*4;
+            sx = (-w/2)+ul+sw/2;
+        }
 
-        svgString += `
-            <g class="grid-line" stroke="hsl(${controls.layoutGridHue}, 100%, ${controls.gridBrightness}%)" stroke-width="${controls.strokeweight}">
-        `;
+        svgString += `<g stroke="${layoutColor}" stroke-width="${sw}">`;
 
         // 水平网格
         for(let i=0; i<6; i++) {
