@@ -146,42 +146,31 @@ var Controls = function() {
   
   // 改名为 saveSVG
   this.saveSVG = function() {
-    // 创建一个临时的 SVG 画布
-    let svgCanvas = createGraphics(controls.rectWidth + 100, controls.rectHeight + 100, SVG);
+    // 保存当前的渲染器
+    let currentRenderer = window._renderer;
     
-    // 设置 SVG 画布的属性
-    svgCanvas.rectMode(CENTER);
-    svgCanvas.colorMode(HSB);
+    // 创建新的 SVG 画布并设置
+    let svg = createCanvas(controls.rectWidth + 100, controls.rectHeight + 100, SVG);
+    background(255, 0); // 透明背景
     
-    // 移动到画布中心
-    svgCanvas.translate(svgCanvas.width/2, svgCanvas.height/2);
+    // 重置绘图设置
+    rectMode(CENTER);
+    colorMode(HSB);
+    translate(width/2, height/2);
     
-    // 重新绘制图形
-    svgCanvas.stroke(controls.picsGridHue, 100, controls.gridBrightness);
-    svgCanvas.strokeWeight(controls.strokeweight);
-    svgCanvas.noFill();
+    // 重新绘制
+    updateGrid();
     
-    // 手动重新绘制所有图形到 SVG 画布
-    // 主矩形
-    svgCanvas.rect(0, 0, controls.rectWidth, controls.rectHeight);
+    // 保存
+    save('mishkaGrid.svg');
     
-    // 如果启用了网格
-    if(controls.picsGrid) {
-      // 这里重新计算所有线条的坐标并绘制
-      // ... 添加你的网格绘制代码 ...
-    }
+    // 恢复原始画布
+    createCanvas(a, b);
+    window._renderer = currentRenderer;
     
-    // 如果启用了布局网格
-    if(controls.layoutGrid) {
-      // 这里重新计算所有布局网格的坐标并绘制
-      // ... 添加你的布局网格绘制代码 ...
-    }
-    
-    // 保存 SVG
-    svgCanvas.save('mishkaGrid.svg');
-    
-    // 清理
-    svgCanvas.remove();
+    // 重置绘图设置
+    rectMode(CENTER);
+    colorMode(HSB);
   }
 }
 
