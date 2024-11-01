@@ -119,40 +119,64 @@ function generateSVGString() {
 
     // 布局网格
     if(controls.layoutGrid) {
-        // 计算网格参数
-        let ul, uw, uh, uy, sw, sh, sx;
+        const ul = w/50;  // 基础单位长度
         
-        if (w/h > 1) {
-            ul = w/50;
-            uw = w-ul*4;
-            uh = (h-ul*7)/6;
-            uy = (-h/2)+ul+uh/2;
-            sw = (w-ul*9)/6;
-            sh = h-ul*2;
-            sx = (-w/2)+ul*2+sw/2;
-        } else {
-            ul = h/50;
-            uw = w-ul*2;
-            uh = (h-ul*9)/6;
-            uy = (-h/2)+ul*2+uh/2;
-            sw = (w-ul*7)/6;
-            sh = h-ul*4;
-            sx = (-w/2)+ul+sw/2;
-        }
+        if (w/h > 1) {  // 横向构图
+            // 水平网格参数
+            const uw = w - ul*4;  // 水平网格宽度
+            const uh = (h - ul*7)/6;  // 水平网格高度
+            const uy = -h/2 + ul + uh/2;  // 第一个水平网格的 y 坐标
+            
+            // 垂直网格参数
+            const sw = (w - ul*9)/6;  // 垂直网格宽度
+            const sh = h - ul*2;  // 垂直网格高度
+            const sx = -w/2 + ul*2 + sw/2;  // 第一个垂直网格的 x 坐标
 
-        svgString += `<g fill="none" stroke="rgb(${HSLToRGB(controls.layoutGridHue, 100, controls.gridBrightness)})" stroke-width="${controls.strokeweight}">`;
+            svgString += `<g fill="none" stroke="rgb(${HSLToRGB(controls.layoutGridHue, 100, controls.gridBrightness)})" stroke-width="${controls.strokeweight}">`;
 
-        // 水平网格
-        for(let i=0; i<6; i++) {
-            svgString += `
-                <rect x="${-uw/2}" y="${uy+(uh+ul)*i}" width="${uw}" height="${uh}" fill="none"/>
-            `;
-        }
-        // 垂直网格
-        for(let k=0; k<6; k++) {
-            svgString += `
-                <rect x="${sx+(sw+ul)*k}" y="${-sh/2}" width="${sw}" height="${sh}" fill="none"/>
-            `;
+            // 水平网格
+            for(let i = 0; i < 6; i++) {
+                const y = uy + (uh + ul) * i;
+                svgString += `
+                    <rect x="${-uw/2}" y="${y}" width="${uw}" height="${uh}"/>
+                `;
+            }
+
+            // 垂直网格
+            for(let k = 0; k < 6; k++) {
+                const x = sx + (sw + ul) * k;
+                svgString += `
+                    <rect x="${x}" y="${-sh/2}" width="${sw}" height="${sh}"/>
+                `;
+            }
+        } else {  // 纵向构图
+            // 水平网格参数
+            const uw = w - ul*2;  // 水平网格宽度
+            const uh = (h - ul*9)/6;  // 水平网格高度
+            const uy = -h/2 + ul*2 + uh/2;  // 第一个水平网格的 y 坐标
+            
+            // 垂直网格参数
+            const sw = (w - ul*7)/6;  // 垂直网格宽度
+            const sh = h - ul*4;  // 垂直网格高度
+            const sx = -w/2 + ul + sw/2;  // 第一个垂直网格的 x 坐标
+
+            svgString += `<g fill="none" stroke="rgb(${HSLToRGB(controls.layoutGridHue, 100, controls.gridBrightness)})" stroke-width="${controls.strokeweight}">`;
+
+            // 水平网格
+            for(let i = 0; i < 6; i++) {
+                const y = uy + (uh + ul) * i;
+                svgString += `
+                    <rect x="${-uw/2}" y="${y}" width="${uw}" height="${uh}"/>
+                `;
+            }
+
+            // 垂直网格
+            for(let k = 0; k < 6; k++) {
+                const x = sx + (sw + ul) * k;
+                svgString += `
+                    <rect x="${x}" y="${-sh/2}" width="${sw}" height="${sh}"/>
+                `;
+            }
         }
         svgString += `</g>`;
     }
