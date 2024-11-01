@@ -144,34 +144,123 @@ var Controls = function() {
   this.picsGrid = true;
   this.layoutGrid = true;
   
-  // 改名为 saveSVG
   this.saveSVG = function() {
+    const w = controls.rectWidth;
+    const h = controls.rectHeight;
+    const sw = controls.strokeweight;
+    
+    // 计算中心点
+    const centerX = (w + 100)/2;
+    const centerY = (h + 100)/2;
+    
+    // 计算矩形的四个角点（相对于中心点）
+    const ax = -w/2;
+    const ay = -h/2;
+    const bx = w/2;
+    const by = -h/2;
+    const cx = w/2;
+    const cy = h/2;
+    const dx = -w/2;
+    const dy = h/2;
+
     // 创建 SVG 字符串
     let svgString = `
-      <svg width="${controls.rectWidth + 100}" height="${controls.rectHeight + 100}" 
-           xmlns="http://www.w3.org/2000/svg">
-        <rect x="${(controls.rectWidth + 100)/2 - controls.rectWidth/2}" 
-              y="${(controls.rectHeight + 100)/2 - controls.rectHeight/2}"
-              width="${controls.rectWidth}" 
-              height="${controls.rectHeight}"
-              fill="none"
-              stroke="black"
-              stroke-width="${controls.strokeweight}"/>
-        <!-- 这里添加其他 SVG 元素 -->
-    </svg>`;
-    
-    // 创建 Blob
+      <svg width="${w + 100}" height="${h + 100}" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(${centerX}, ${centerY})" stroke="hsl(${controls.picsGridHue}, 100%, ${controls.gridBrightness}%)" stroke-width="${sw}" fill="none">
+          <!-- 主矩形 -->
+          <rect x="${ax}" y="${ay}" width="${w}" height="${h}"/>
+    `;
+
+    // 如果启用了网格
+    if(controls.picsGrid) {
+      // 对角线
+      svgString += `
+          <!-- 对角线 -->
+          <line x1="${ax}" y1="${ay}" x2="${cx}" y2="${cy}"/>
+          <line x1="${bx}" y1="${by}" x2="${dx}" y2="${dy}"/>
+          <line x1="${ax}" y1="0" x2="0" y2="${ay}"/>
+          <line x1="${ax}" y1="0" x2="0" y2="${dy}"/>
+          <line x1="${bx}" y1="0" x2="0" y2="${by}"/>
+          <line x1="${bx}" y1="0" x2="0" y2="${dy}"/>
+          
+          <!-- 中心十字线 -->
+          <line x1="0" y1="${ay}" x2="0" y2="${dy}"/>
+          <line x1="${ax}" y1="0" x2="${bx}" y2="0"/>
+      `;
+
+      // 计算其他几何线条
+      const ex = (h*h)/w;
+      const ex1 = ex+dx;
+      const ey = (w*w)/h;
+      const ey2 = ey+by;
+      const fx = dx+((h*h*w)/(h*h+w*w));
+      const fy = ay+((h*h*w)/(h*h+w*w))*(h/w);
+
+      // 添加垂直交叉线
+      svgString += `
+          <!-- 交叉垂直线 -->
+          <line x1="${fx}" y1="${ay}" x2="${fx}" y2="${dy}"/>
+          <line x1="${-fx}" y1="${ay}" x2="${-fx}" y2="${dy}"/>
+          <line x1="${ax}" y1="${fy}" x2="${bx}" y2="${fy}"/>
+          <line x1="${ax}" y1="${-fy}" x2="${bx}" y2="${-fy}"/>
+      `;
+
+      // 根据宽高比添加不同的线条
+      if (w/h > 1) {
+        svgString += `
+          <line x1="${ax}" y1="${ay}" x2="${ex1}" y2="${dy}"/>
+          <line x1="${dx}" y1="${dy}" x2="${ex1}" y2="${ay}"/>
+          <line x1="${bx}" y1="${by}" x2="${-ex1}" y2="${dy}"/>
+          <line x1="${cx}" y1="${cy}" x2="${-ex1}" y2="${by}"/>
+          <line x1="${ax}" y1="0" x2="${ex/2+dx}" y2="${dy}"/>
+          <line x1="${ax}" y1="0" x2="${ex/2+ax}" y2="${ay}"/>
+          <line x1="${bx}" y1="0" x2="${bx-ex/2}" y2="${by}"/>
+          <line x1="${bx}" y1="0" x2="${bx-ex/2}" y2="${cy}"/>
+        `;
+      } else {
+        svgString += `
+          <line x1="${ax}" y1="${ay}" x2="${bx}" y2="${ey2}"/>
+          <line x1="${bx}" y1="${by}" x2="${-bx}" y2="${ey2}"/>
+          <line x1="${cx}" y1="${cy}" x2="${ax}" y2="${-ey2}"/>
+          <line x1="${dx}" y1="${dy}" x2="${bx}" y2="${-ey2}"/>
+        `;
+      }
+    }
+
+    // 如果启用了布局网格
+    if(controls.layoutGrid) {
+      const ul = w/50;
+      const uw = w-ul*4;
+      const uh = (h-ul*7)/6;
+      const uy = (-h/2)+ul+uh/2;
+      const sw = (w-ul*9)/6;
+      const sh = h-ul*2;
+      const sx = (-w/2)+ul*2+sw/2;
+
+      // 添加布局网格
+      for(let i=0; i<6; i++) {
+        svgString += `
+          <rect x="${-uw/2}" y="${uy+(uh+ul)*i}" width="${uw}" height="${uh}"/>
+        `;
+      }
+      for(let k=0; k<6; k++) {
+        svgString += `
+          <rect x="${sx+(sw+ul)*k}" y="${-sh/2}" width="${sw}" height="${sh}"/>
+        `;
+      }
+    }
+
+    svgString += `
+        </g>
+      </svg>
+    `;
+
+    // 创建 Blob 并下载
     const blob = new Blob([svgString], {type: 'image/svg+xml'});
-    
-    // 创建下载链接
     const element = document.createElement('a');
     element.download = 'mishkaGrid.svg';
     element.href = window.URL.createObjectURL(blob);
-    
-    // 触发下载
     element.click();
-    
-    // 清理
     window.URL.revokeObjectURL(element.href);
   }
 }
