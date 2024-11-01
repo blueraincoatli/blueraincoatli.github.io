@@ -4,7 +4,7 @@ var Controls = function() {
     this.strokeweight = 1.2;
     this.picsGridHue = 50;
     this.layoutGridHue = 200;
-    this.gridBrightness = 100;
+    this.gridBrightness = 50;
     this.picsGrid = true;
     this.layoutGrid = true;
 }
