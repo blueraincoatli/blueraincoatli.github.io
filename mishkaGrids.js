@@ -136,9 +136,9 @@ function generateSVGString() {
 
             svgString += `<g fill="none" stroke="rgb(${HSLToRGB(controls.layoutGridHue, 100, controls.gridBrightness)})" stroke-width="${controls.strokeweight}">`;
 
-            // 水平网格
+            // 水平网格 - 移除了 uh/2 的偏移
             for(let i = 0; i < 6; i++) {
-                const y = startY + uh/2 + i * (uh + ul);
+                const y = startY + i * (uh + ul);
                 svgString += `
                     <rect x="${startX}" y="${y}" width="${uw}" height="${uh}"/>
                 `;
@@ -166,9 +166,9 @@ function generateSVGString() {
 
             svgString += `<g fill="none" stroke="rgb(${HSLToRGB(controls.layoutGridHue, 100, controls.gridBrightness)})" stroke-width="${controls.strokeweight}">`;
 
-            // 水平网格
+            // 水平网格 - 移除了 uh/2 的偏移
             for(let i = 0; i < 6; i++) {
-                const y = startY + uh/2 + i * (uh + ul);
+                const y = startY + i * (uh + ul);
                 svgString += `
                     <rect x="${startX}" y="${y}" width="${uw}" height="${uh}"/>
                 `;
