@@ -15,6 +15,11 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            pointer-events: none; /* 允许点击穿透 SVG */
+        }
+        /* 确保 GUI 在最上层 */
+        .dg {
+            z-index: 2;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>

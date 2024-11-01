@@ -41,18 +41,16 @@ function generateSVGString() {
     const dx = -w/2;
     const dy = h/2;
 
-    // 创建 SVG 字符串，添加黑色背景
+    // 创建 SVG 字符串，移除背景黑色块
     let svgString = `
         <svg width="${totalWidth}" height="${totalHeight}" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100%" height="100%" fill="black"/>
-            <g transform="translate(${totalWidth/2}, ${totalHeight/2})" fill="none">
+            <g transform="translate(${totalWidth/2}, ${totalHeight/2})">
     `;
 
     // 主网格
     if(controls.picsGrid) {
-        const picsColor = `hsla(${controls.picsGridHue}, 100%, ${controls.gridBrightness}%, 1)`;
         svgString += `
-            <g stroke="${picsColor}" stroke-width="${sw}">
+            <g fill="none" stroke="rgb(${HSLToRGB(controls.picsGridHue, 100, controls.gridBrightness)})" stroke-width="${sw}">
                 <!-- 主矩形 -->
                 <rect x="${ax}" y="${ay}" width="${w}" height="${h}"/>
                 
@@ -121,9 +119,7 @@ function generateSVGString() {
 
     // 布局网格
     if(controls.layoutGrid) {
-        const layoutColor = `hsla(${controls.layoutGridHue}, 100%, ${controls.gridBrightness}%, 1)`;
-        
-        // 根据宽高比计算网格参数
+        // 计算网格参数
         let ul, uw, uh, uy, sw, sh, sx;
         
         if (w/h > 1) {
@@ -144,18 +140,18 @@ function generateSVGString() {
             sx = (-w/2)+ul+sw/2;
         }
 
-        svgString += `<g stroke="${layoutColor}" stroke-width="${sw}">`;
+        svgString += `<g fill="none" stroke="rgb(${HSLToRGB(controls.layoutGridHue, 100, controls.gridBrightness)})" stroke-width="${controls.strokeweight}">`;
 
         // 水平网格
         for(let i=0; i<6; i++) {
             svgString += `
-                <rect x="${-uw/2}" y="${uy+(uh+ul)*i}" width="${uw}" height="${uh}"/>
+                <rect x="${-uw/2}" y="${uy+(uh+ul)*i}" width="${uw}" height="${uh}" fill="none"/>
             `;
         }
         // 垂直网格
         for(let k=0; k<6; k++) {
             svgString += `
-                <rect x="${sx+(sw+ul)*k}" y="${-sh/2}" width="${sw}" height="${sh}"/>
+                <rect x="${sx+(sw+ul)*k}" y="${-sh/2}" width="${sw}" height="${sh}" fill="none"/>
             `;
         }
         svgString += `</g>`;
@@ -167,6 +163,35 @@ function generateSVGString() {
     `;
 
     return svgString;
+}
+
+// 添加 HSL 转 RGB 的辅助函数
+function HSLToRGB(h, s, l) {
+    s /= 100;
+    l /= 100;
+
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c/2;
+    let r = 0;
+    let g = 0;
+    let b = 0;
+
+    if (0 <= h && h < 60) {
+        r = c; g = x; b = 0;
+    } else if (60 <= h && h < 120) {
+        r = x; g = c; b = 0;
+    } else if (120 <= h && h < 180) {
+        r = 0; g = c; b = x;
+    } else if (180 <= h && h < 240) {
+        r = 0; g = x; b = c;
+    } else if (240 <= h && h < 300) {
+        r = x; g = 0; b = c;
+    } else if (300 <= h && h < 360) {
+        r = c; g = 0; b = x;
+    }
+
+    return `${Math.round((r + m) * 255)},${Math.round((g + m) * 255)},${Math.round((b + m) * 255)}`;
 }
 
 function updateSVG() {
