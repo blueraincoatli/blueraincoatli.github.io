@@ -143,11 +143,26 @@ var Controls = function() {
   this.gridBrightness = 100;
   this.picsGrid = true;
   this.layoutGrid = true;
+  
+  // 简化后的保存函数，只输出SVG
   this.savePic = function saveMyGrid() {
-    translate(-axisx,-axisy);
-    clear();
+    // 创建新的 SVG 画布
+    let svgCanvas = createGraphics(a, b, SVG);
+    svgCanvas.rectMode(CENTER);
+    svgCanvas.colorMode(HSB);
+    
+    // 将坐标系移动到中心
+    svgCanvas.translate(axisx, axisy);
+    
+    // 在 SVG 画布上重新绘制所有内容
+    let tempCanvas = window._renderer;
+    window._renderer = svgCanvas;
     updateGrid();
-    save('mishkaGrid'); 
+    window._renderer = tempCanvas;
+    
+    // 保存 SVG 文件
+    svgCanvas.save('mishkaGrid.svg');
+    svgCanvas.remove();
   }
 }
 
