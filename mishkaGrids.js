@@ -144,23 +144,18 @@ var Controls = function() {
   this.picsGrid = true;
   this.layoutGrid = true;
   
-  // 简化后的保存函数，只输出SVG
-  this.savePic = function saveMyGrid() {
-    // 创建新的 SVG 画布
+  // 改名为 saveSVG
+  this.saveSVG = function() {
     let svgCanvas = createGraphics(a, b, SVG);
     svgCanvas.rectMode(CENTER);
     svgCanvas.colorMode(HSB);
-    
-    // 将坐标系移动到中心
     svgCanvas.translate(axisx, axisy);
     
-    // 在 SVG 画布上重新绘制所有内容
     let tempCanvas = window._renderer;
     window._renderer = svgCanvas;
     updateGrid();
     window._renderer = tempCanvas;
     
-    // 保存 SVG 文件
     svgCanvas.save('mishkaGrid.svg');
     svgCanvas.remove();
   }
@@ -182,5 +177,5 @@ window.onload = function() {
   gui.add(controls, 'gridBrightness', 0, 100);
   gui.add(controls, 'picsGrid');
   gui.add(controls, 'layoutGrid');
-  gui.add(controls, 'savePic').name('Save SVG');  // 更改按钮名称更清晰
+  gui.add(controls, 'saveSVG');  // 直接使用方法名
 }
