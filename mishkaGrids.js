@@ -146,31 +146,33 @@ var Controls = function() {
   
   // 改名为 saveSVG
   this.saveSVG = function() {
-    // 保存当前的渲染器
-    let currentRenderer = window._renderer;
+    // 创建 SVG 字符串
+    let svgString = `
+      <svg width="${controls.rectWidth + 100}" height="${controls.rectHeight + 100}" 
+           xmlns="http://www.w3.org/2000/svg">
+        <rect x="${(controls.rectWidth + 100)/2 - controls.rectWidth/2}" 
+              y="${(controls.rectHeight + 100)/2 - controls.rectHeight/2}"
+              width="${controls.rectWidth}" 
+              height="${controls.rectHeight}"
+              fill="none"
+              stroke="black"
+              stroke-width="${controls.strokeweight}"/>
+        <!-- 这里添加其他 SVG 元素 -->
+    </svg>`;
     
-    // 创建新的 SVG 画布并设置
-    let svg = createCanvas(controls.rectWidth + 100, controls.rectHeight + 100, SVG);
-    background(255, 0); // 透明背景
+    // 创建 Blob
+    const blob = new Blob([svgString], {type: 'image/svg+xml'});
     
-    // 重置绘图设置
-    rectMode(CENTER);
-    colorMode(HSB);
-    translate(width/2, height/2);
+    // 创建下载链接
+    const element = document.createElement('a');
+    element.download = 'mishkaGrid.svg';
+    element.href = window.URL.createObjectURL(blob);
     
-    // 重新绘制
-    updateGrid();
+    // 触发下载
+    element.click();
     
-    // 保存
-    save('mishkaGrid.svg');
-    
-    // 恢复原始画布
-    createCanvas(a, b);
-    window._renderer = currentRenderer;
-    
-    // 重置绘图设置
-    rectMode(CENTER);
-    colorMode(HSB);
+    // 清理
+    window.URL.revokeObjectURL(element.href);
   }
 }
 
