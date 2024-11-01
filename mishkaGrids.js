@@ -182,5 +182,5 @@ window.onload = function() {
   gui.add(controls, 'gridBrightness', 0, 100);
   gui.add(controls, 'picsGrid');
   gui.add(controls, 'layoutGrid');
-  gui.add(controls, 'savePic');
+  gui.add(controls, 'savePic').name('Save SVG');  // 更改按钮名称更清晰
 }
