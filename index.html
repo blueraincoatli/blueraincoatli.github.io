@@ -1,20 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-
-  <!-- PLEASE NO CHANGES BELOW THIS LINE (UNTIL I SAY SO) -->
-  <script language="javascript" type="text/javascript" src="libraries/p5.js"></script>
-  <script language="javascript" type="text/javascript" src="mishkaGrids.js"></script>
-  <!-- OK, YOU CAN MAKE CHANGES BELOW THIS LINE AGAIN -->
-  <script src="https://unpkg.com/p5.js-svg@1.5.1"></script>
- <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.2/dat.gui.js"></script>
-  <!-- This line removes any default padding and style. 
-       You might only need one of these values set. -->
-  <style> body {padding: 0; margin: 0;} </style>
+    <title>弹跳小球</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 </head>
-
 <body>
+    <script>
+        let x, y;      // 小球的位置
+        let xSpeed = 3; // x方向的速度
+        let ySpeed = 4; // y方向的速度
+        let radius = 10; // 小球半径
 
+        function setup() {
+            createCanvas(500, 500);
+            // 初始化小球位置在画布中心
+            x = width / 2;
+            y = height / 2;
+        }
+
+        function draw() {
+            background(0); // 黑色背景
+            
+            // 绘制白色小球
+            fill(255);
+            noStroke();
+            circle(x, y, radius * 2);
+            
+            // 更新小球位置
+            x += xSpeed;
+            y += ySpeed;
+            
+            // 碰到左右边界时反弹
+            if (x + radius > width || x - radius < 0) {
+                xSpeed *= -1;
+            }
+            
+            // 碰到上下边界时反弹
+            if (y + radius > height || y - radius < 0) {
+                ySpeed *= -1;
+            }
+        }
+    </script>
 </body>
 </html>
