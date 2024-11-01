@@ -122,59 +122,63 @@ function generateSVGString() {
         const ul = w/50;  // 基础单位长度
         
         if (w/h > 1) {  // 横向构图
+            // 计算共同的起始位置
+            const startY = -h/2 + ul;  // 顶部起始位置
+            const startX = -w/2 + ul*2;  // 左侧起始位置
+            
             // 水平网格参数
             const uw = w - ul*4;  // 水平网格宽度
             const uh = (h - ul*7)/6;  // 水平网格高度
-            const uy = -h/2 + ul + uh/2;  // 第一个水平网格的 y 坐标
             
             // 垂直网格参数
             const sw = (w - ul*9)/6;  // 垂直网格宽度
             const sh = h - ul*2;  // 垂直网格高度
-            const sx = -w/2 + ul*2 + sw/2;  // 第一个垂直网格的 x 坐标
 
             svgString += `<g fill="none" stroke="rgb(${HSLToRGB(controls.layoutGridHue, 100, controls.gridBrightness)})" stroke-width="${controls.strokeweight}">`;
 
             // 水平网格
             for(let i = 0; i < 6; i++) {
-                const y = uy + (uh + ul) * i;
+                const y = startY + uh/2 + i * (uh + ul);
                 svgString += `
-                    <rect x="${-uw/2}" y="${y}" width="${uw}" height="${uh}"/>
+                    <rect x="${startX}" y="${y}" width="${uw}" height="${uh}"/>
                 `;
             }
 
             // 垂直网格
             for(let k = 0; k < 6; k++) {
-                const x = sx + (sw + ul) * k;
+                const x = startX + k * (sw + ul);
                 svgString += `
-                    <rect x="${x}" y="${-sh/2}" width="${sw}" height="${sh}"/>
+                    <rect x="${x}" y="${startY}" width="${sw}" height="${sh}"/>
                 `;
             }
         } else {  // 纵向构图
+            // 计算共同的起始位置
+            const startY = -h/2 + ul*2;  // 顶部起始位置
+            const startX = -w/2 + ul;  // 左侧起始位置
+            
             // 水平网格参数
             const uw = w - ul*2;  // 水平网格宽度
             const uh = (h - ul*9)/6;  // 水平网格高度
-            const uy = -h/2 + ul*2 + uh/2;  // 第一个水平网格的 y 坐标
             
             // 垂直网格参数
             const sw = (w - ul*7)/6;  // 垂直网格宽度
             const sh = h - ul*4;  // 垂直网格高度
-            const sx = -w/2 + ul + sw/2;  // 第一个垂直网格的 x 坐标
 
             svgString += `<g fill="none" stroke="rgb(${HSLToRGB(controls.layoutGridHue, 100, controls.gridBrightness)})" stroke-width="${controls.strokeweight}">`;
 
             // 水平网格
             for(let i = 0; i < 6; i++) {
-                const y = uy + (uh + ul) * i;
+                const y = startY + uh/2 + i * (uh + ul);
                 svgString += `
-                    <rect x="${-uw/2}" y="${y}" width="${uw}" height="${uh}"/>
+                    <rect x="${startX}" y="${y}" width="${uw}" height="${uh}"/>
                 `;
             }
 
             // 垂直网格
             for(let k = 0; k < 6; k++) {
-                const x = sx + (sw + ul) * k;
+                const x = startX + k * (sw + ul);
                 svgString += `
-                    <rect x="${x}" y="${-sh/2}" width="${sw}" height="${sh}"/>
+                    <rect x="${x}" y="${startY}" width="${sw}" height="${sh}"/>
                 `;
             }
         }
