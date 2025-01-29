@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Snake</title>
+    <title>Happy New Year Snake</title>
     <style>
         body {
             margin: 0;
@@ -43,14 +43,24 @@
             [1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0], // A
             [1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1], // P
             [1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1], // P
-            [1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0]  // Y
+            [1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0], // Y
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 空行
+            [1,1,1,1,0,1,0,0,1,0,1,1,1,0,0,1,1,1,1,0,1,0,0,1], // N
+            [1,0,0,0,0,1,0,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,1], // E
+            [1,0,0,0,0,1,0,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,0,1], // W
+            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], // 空行
+            [1,0,0,0,0,1,0,0,1,0,1,1,1,1,0,1,0,0,1,0,1,0,0,0], // Y
+            [1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0], // E
+            [1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0], // A
+            [1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1]  // R
         ];
         let snake = [{ x: 10, y: 10 }];
         let direction = 'RIGHT';
         let food = { x: 0, y: 0 };
         let score = 0;
         let countdown = 3;
-        let gameSpeed = 150; // 初始速度（毫秒）
+        let gameSpeed = 1000; // 初始速度（1000 毫秒 = 1 秒）
+        let speedIncreaseFactor = 0.9; // 每次加速的比例
 
         // 设置画布尺寸
         function resizeCanvas() {
@@ -84,7 +94,12 @@
             for (let i = 0; i < pixelText.length; i++) {
                 for (let j = 0; j < pixelText[i].length; j++) {
                     if (pixelText[i][j] === 1) {
-                        availablePixels.push({ x: startX + j * gridSize, y: startY + i * gridSize });
+                        const pixelX = startX + j * gridSize;
+                        const pixelY = startY + i * gridSize;
+                        // 检查食物是否与蛇身重叠
+                        if (!snake.some(segment => segment.x === pixelX && segment.y === pixelY)) {
+                            availablePixels.push({ x: pixelX, y: pixelY });
+                        }
                     }
                 }
             }
@@ -141,12 +156,13 @@
             // 吃食物
             if (head.x === food.x && head.y === food.y) {
                 score++;
+                gameSpeed *= speedIncreaseFactor; // 加速
                 generateFood();
             } else {
                 snake.pop();
             }
 
-            setTimeout(gameLoop, gameSpeed); // 降低速度
+            setTimeout(gameLoop, gameSpeed); // 控制速度
         }
 
         // 重置游戏
@@ -154,6 +170,7 @@
             snake = [{ x: 10, y: 10 }];
             direction = 'RIGHT';
             score = 0;
+            gameSpeed = 1000; // 重置速度
             generateFood();
         }
 
