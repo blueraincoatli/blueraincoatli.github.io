@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新春贪吃蛇</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #8B0000, #FF0000); /* 深红到大红渐变 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            color: gold;
+        }
+        canvas {
+            display: block;
+            background: transparent;
+        }
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            text-align: center;
+            width: 100%;
+            font-size: 16px;
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div class="footer">李红宇恭祝亲友万事如意！</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 20; // 每个像素点的大小
+        const pixelText = [
+            [1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1], // 新
+            [1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1], // 春
+            [1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1], // 快
+            [1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1]  // 乐
+        ];
+        let snake = [{ x: 10, y: 10 }];
+        let direction = 'RIGHT';
+        let food = { x: 0, y: 0 };
+        let score = 0;
+        let countdown = 3;
+
+        // 设置画布尺寸
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // 绘制像素化文字
+        function drawPixelText() {
+            ctx.fillStyle = 'rgba(255, 215, 0, 0.8)'; // 金色
+            const startX = (canvas.width - pixelText[0].length * gridSize) / 2;
+            const startY = (canvas.height - pixelText.length * gridSize) / 2;
+
+            for (let i = 0; i < pixelText.length; i++) {
+                for (let j = 0; j < pixelText[i].length; j++) {
+                    if (pixelText[i][j] === 1) {
+                        ctx.fillRect(startX + j * gridSize, startY + i * gridSize, gridSize, gridSize);
+                    }
+                }
+            }
+        }
+
+        // 生成食物（从像素文字中随机选择一个点）
+        function generateFood() {
+            const availablePixels = [];
+            const startX = (canvas.width - pixelText[0].length * gridSize) / 2;
+            const startY = (canvas.height - pixelText.length * gridSize) / 2;
+
+            for (let i = 0; i < pixelText.length; i++) {
+                for (let j = 0; j < pixelText[i].length; j++) {
+                    if (pixelText[i][j] === 1) {
+                        availablePixels.push({ x: startX + j * gridSize, y: startY + i * gridSize });
+                    }
+                }
+            }
+
+            if (availablePixels.length > 0) {
+                const randomPixel = availablePixels[Math.floor(Math.random() * availablePixels.length)];
+                food.x = randomPixel.x;
+                food.y = randomPixel.y;
+            }
+        }
+
+        // 绘制蛇
+        function drawSnake() {
+            ctx.fillStyle = 'lime';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+            });
+        }
+
+        // 绘制食物
+        function drawFood() {
+            ctx.fillStyle = 'gold';
+            ctx.beginPath();
+            ctx.arc(food.x + gridSize / 2, food.y + gridSize / 2, gridSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // 游戏逻辑
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPixelText();
+            drawSnake();
+            drawFood();
+
+            // 移动蛇
+            const head = { ...snake[0] };
+            switch (direction) {
+                case 'UP': head.y -= gridSize; break;
+                case 'DOWN': head.y += gridSize; break;
+                case 'LEFT': head.x -= gridSize; break;
+                case 'RIGHT': head.x += gridSize; break;
+            }
+
+            // 碰撞检测
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height ||
+                snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                alert('游戏结束！得分：' + score);
+                resetGame();
+                return;
+            }
+
+            snake.unshift(head);
+
+            // 吃食物
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 重置游戏
+        function resetGame() {
+            snake = [{ x: 10, y: 10 }];
+            direction = 'RIGHT';
+            score = 0;
+            generateFood();
+        }
+
+        // 方向控制
+        document.addEventListener('keydown', (e) => {
+            const key = e.key;
+            if (key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+            if (key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+            if (key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+            if (key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+        });
+
+        // 倒计时开始
+        function startCountdown() {
+            if (countdown > 0) {
+                ctx.fillStyle = 'gold';
+                ctx.font = '48px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(countdown, canvas.width / 2, canvas.height / 2);
+                countdown--;
+                setTimeout(startCountdown, 1000);
+            } else {
+                gameLoop();
+            }
+        }
+
+        // 初始化
+        generateFood();
+        startCountdown();
+    </script>
+</body>
+</html>
