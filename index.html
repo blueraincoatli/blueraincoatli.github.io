@@ -1,185 +1,28 @@
-<!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>notepad</title>
+    <meta charset="utf-8">
+    <title>Mishka Grids</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: black;
+        }
+        svg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none; /* 允许点击穿透 SVG */
+        }
+        /* 确保 GUI 在最上层 */
+        .dg {
+            z-index: 2;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+    <script src="mishkaGrids.js"></script>
 </head>
-<style type="text/css">
-ol,ul{
-display:block;
-list-style-type:none;
-margin:3px;
-}
-</style><body>
-<div>&lt;!DOCTYPE html&gt;<br>
-&lt;html&gt;<br>
-&lt;head&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;title&gt;&#26032;&#26149;&#36138;&#21507;&#34503;&lt;/title&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;style&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; body { margin: 0; touch-action: none; background: #ff0000; }<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #gameCanvas { background: #cc0000; }<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .controls {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; position: fixed;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; bottom: 20px;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; width: 100%;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; text-align: center;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .control-btn {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; width: 60px;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; height: 60px;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; margin: 5px;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; background: rgba(255, 215, 0, 0.3);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; border: 2px solid #FFD700;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; border-radius: 50%;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>
-&nbsp;&nbsp;&nbsp; &lt;/style&gt;<br>
-&lt;/head&gt;<br>
-&lt;body&gt;<br>
-&lt;canvas id="gameCanvas"&gt;&lt;/canvas&gt;<br>
-&lt;div class="controls"&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;button class="control-btn" onclick="changeDirection('UP')"&gt;&#8593;&lt;/button&gt;&lt;br&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;button class="control-btn" onclick="changeDirection('LEFT')"&gt;&#8592;&lt;/button&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;button class="control-btn" onclick="changeDirection('RIGHT')"&gt;&#8594;&lt;/button&gt;&lt;br&gt;<br>
-&nbsp;&nbsp;&nbsp; &lt;button class="control-btn" onclick="changeDirection('DOWN')"&gt;&#8595;&lt;/button&gt;<br>
-&lt;/div&gt;<br>
-<br>
-&lt;script&gt;<br>
-const canvas = document.getElementById('gameCanvas');<br>
-const ctx = canvas.getContext('2d');<br>
-<br>
-// &#35774;&#32622;&#30011;&#24067;&#23610;&#23544;<br>
-function resizeCanvas() {<br>
-&nbsp;&nbsp;&nbsp; canvas.width = window.innerWidth;<br>
-&nbsp;&nbsp;&nbsp; canvas.height = window.innerHeight;<br>
-}<br>
-window.addEventListener('resize', resizeCanvas);<br>
-resizeCanvas();<br>
-<br>
-// &#26032;&#26149;&#31069;&#31119;&#20687;&#32032;&#25991;&#23383;<br>
-function drawFestivalText() {<br>
-&nbsp;&nbsp;&nbsp; ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';<br>
-&nbsp;&nbsp;&nbsp; ctx.font = '24px "Press Start 2P"';<br>
-&nbsp;&nbsp;&nbsp; ctx.textAlign = 'center';<br>
-&nbsp;&nbsp;&nbsp; ctx.fillText('&#26032;&#24180;&#24555;&#20048;', canvas.width/2, canvas.height/3);<br>
-&nbsp;&nbsp;&nbsp; ctx.fillText('&#19975;&#20107;&#22914;&#24847;', canvas.width/2, canvas.height/3 + 40);<br>
-}<br>
-<br>
-// &#28216;&#25103;&#21442;&#25968;<br>
-let snake = [{x: 10, y: 10}];<br>
-let food = {x: 15, y: 15};<br>
-let direction = 'RIGHT';<br>
-let gridSize = 20;<br>
-let gameLoop;<br>
-<br>
-// &#29983;&#25104;&#39135;&#29289;<br>
-function generateFood() {<br>
-&nbsp;&nbsp;&nbsp; food.x = Math.floor(Math.random() * (canvas.width/gridSize));<br>
-&nbsp;&nbsp;&nbsp; food.y = Math.floor(Math.random() * (canvas.height/gridSize));<br>
-}<br>
-<br>
-// &#32472;&#21046;&#28176;&#21464;&#37329;&#33394;<br>
-function drawGold(x, y) {<br>
-&nbsp;&nbsp;&nbsp; const gradient = ctx.createRadialGradient(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x*gridSize + gridSize/2,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; y*gridSize + gridSize/2,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; x*gridSize + gridSize/2,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; y*gridSize + gridSize/2,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gridSize/2<br>
-&nbsp;&nbsp;&nbsp; );<br>
-&nbsp;&nbsp;&nbsp; gradient.addColorStop(0, '#FFD700');<br>
-&nbsp;&nbsp;&nbsp; gradient.addColorStop(1, '#D4AF37');<br>
-&nbsp;&nbsp;&nbsp; return gradient;<br>
-}<br>
-<br>
-// &#28216;&#25103;&#20027;&#24490;&#29615;<br>
-function gameStep() {<br>
-&nbsp;&nbsp;&nbsp; // &#31227;&#21160;&#34503;&#22836;<br>
-&nbsp;&nbsp;&nbsp; let head = {...snake[0]};<br>
-&nbsp;&nbsp;&nbsp; switch(direction) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case 'UP': head.y--; break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case 'DOWN': head.y++; break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case 'LEFT': head.x--; break;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case 'RIGHT': head.x++; break;<br>
-&nbsp;&nbsp;&nbsp; }<br>
-<br>
-&nbsp;&nbsp;&nbsp; // &#30896;&#25758;&#26816;&#27979;<br>
-&nbsp;&nbsp;&nbsp; if (head.x &lt; 0 || head.x &gt;= canvas.width/gridSize ||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; head.y &lt; 0 || head.y &gt;= canvas.height/gridSize ||<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; snake.some(segment =&gt; segment.x === head.x &amp;&amp; segment.y === head.y)) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; clearInterval(gameLoop);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; alert('&#28216;&#25103;&#32467;&#26463;&#65281;&#26032;&#26149;&#22823;&#21513;&#65281;');<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return;<br>
-&nbsp;&nbsp;&nbsp; }<br>
-<br>
-&nbsp;&nbsp;&nbsp; snake.unshift(head);<br>
-<br>
-&nbsp;&nbsp;&nbsp; // &#21507;&#39135;&#29289;&#26816;&#27979;<br>
-&nbsp;&nbsp;&nbsp; if (head.x === food.x &amp;&amp; head.y === food.y) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; generateFood();<br>
-&nbsp;&nbsp;&nbsp; } else {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; snake.pop();<br>
-&nbsp;&nbsp;&nbsp; }<br>
-<br>
-&nbsp;&nbsp;&nbsp; // &#32472;&#21046;<br>
-&nbsp;&nbsp;&nbsp; ctx.fillStyle = '#cc0000';<br>
-&nbsp;&nbsp;&nbsp; ctx.fillRect(0, 0, canvas.width, canvas.height);<br>
-&nbsp;&nbsp;&nbsp; drawFestivalText();<br>
-<br>
-&nbsp;&nbsp;&nbsp; // &#32472;&#21046;&#39135;&#29289;<br>
-&nbsp;&nbsp;&nbsp; ctx.fillStyle = drawGold(food.x, food.y);<br>
-&nbsp;&nbsp;&nbsp; ctx.beginPath();<br>
-&nbsp;&nbsp;&nbsp; ctx.arc(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; food.x*gridSize + gridSize/2,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; food.y*gridSize + gridSize/2,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gridSize/2, 0, Math.PI*2<br>
-&nbsp;&nbsp;&nbsp; );<br>
-&nbsp;&nbsp;&nbsp; ctx.fill();<br>
-<br>
-&nbsp;&nbsp;&nbsp; // &#32472;&#21046;&#34503;<br>
-&nbsp;&nbsp;&nbsp; snake.forEach((segment, index) =&gt; {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ctx.fillStyle = drawGold(segment.x, segment.y);<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ctx.fillRect(<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; segment.x*gridSize,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; segment.y*gridSize,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gridSize - 1,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gridSize - 1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; );<br>
-&nbsp;&nbsp;&nbsp; });<br>
-}<br>
-<br>
-// &#26041;&#21521;&#25511;&#21046;<br>
-function changeDirection(newDirection) {<br>
-&nbsp;&nbsp;&nbsp; const opposite = {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; UP: 'DOWN', DOWN: 'UP',<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LEFT: 'RIGHT', RIGHT: 'LEFT'<br>
-&nbsp;&nbsp;&nbsp; };<br>
-&nbsp;&nbsp;&nbsp; if (newDirection !== opposite[direction]) {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; direction = newDirection;<br>
-&nbsp;&nbsp;&nbsp; }<br>
-}<br>
-<br>
-// &#35302;&#25511;&#21644;&#38190;&#30424;&#20107;&#20214;<br>
-document.addEventListener('keydown', (e) =&gt; {<br>
-&nbsp;&nbsp;&nbsp; const directions = {<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ArrowUp: 'UP',<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ArrowDown: 'DOWN',<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ArrowLeft: 'LEFT',<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ArrowRight: 'RIGHT'<br>
-&nbsp;&nbsp;&nbsp; };<br>
-&nbsp;&nbsp;&nbsp; if (directions[e.key]) changeDirection(directions[e.key]);<br>
-});<br>
-<br>
-// &#24320;&#22987;&#28216;&#25103;<br>
-generateFood();<br>
-gameLoop = setInterval(gameStep, 150);<br>
-<br>
-// &#31105;&#27490;&#39029;&#38754;&#28378;&#21160;<br>
-document.addEventListener('touchmove', (e) =&gt; e.preventDefault(), { passive: false });<br>
-&lt;/script&gt;<br>
-&lt;/body&gt;<br>
-&lt;/html&gt;</div>
+<body>
 </body>
-</html>
