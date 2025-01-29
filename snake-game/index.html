@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新春贪吃蛇</title>
+    <title>Happy Snake</title>
     <style>
         body {
             margin: 0;
@@ -39,16 +39,18 @@
         const ctx = canvas.getContext('2d');
         const gridSize = 20; // 每个像素点的大小
         const pixelText = [
-            [1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1], // 新
-            [1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1], // 春
-            [1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1], // 快
-            [1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1]  // 乐
+            [1,1,1,1,0,1,0,0,1,0,1,1,1,1,0,1,0,0,1,0,1,1,1,1], // H
+            [1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0], // A
+            [1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1], // P
+            [1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1], // P
+            [1,0,0,0,0,1,0,0,1,0,1,0,0,0,0,1,0,0,1,0,1,0,0,0]  // Y
         ];
         let snake = [{ x: 10, y: 10 }];
         let direction = 'RIGHT';
         let food = { x: 0, y: 0 };
         let score = 0;
         let countdown = 3;
+        let gameSpeed = 150; // 初始速度（毫秒）
 
         // 设置画布尺寸
         function resizeCanvas() {
@@ -144,7 +146,7 @@
                 snake.pop();
             }
 
-            requestAnimationFrame(gameLoop);
+            setTimeout(gameLoop, gameSpeed); // 降低速度
         }
 
         // 重置游戏
