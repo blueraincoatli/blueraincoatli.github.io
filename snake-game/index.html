@@ -2,74 +2,114 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>福字贪吃蛇</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>手机版福字贪吃蛇</title>
     <style>
         body {
             margin: 0;
+            padding: 0;
             overflow: hidden;
             background: linear-gradient(to bottom, #8B0000, #FF0000);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
+            touch-action: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
-        canvas {
-            display: block;
-            background: transparent;
+        #gameCanvas {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 215, 0, 0.3);
+            border: 2px solid #FFD700;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            margin: 0 auto;
         }
         .footer {
-            position: absolute;
-            bottom: 20px;
-            text-align: center;
+            position: fixed;
+            bottom: 150px;
             width: 100%;
-            font-size: 16px;
+            text-align: center;
             color: gold;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
     <div class="footer">李红宇恭祝亲友万事如意！</div>
+    <div class="controls">
+        <div></div>
+        <button class="control-btn" ontouchstart="changeDirection('UP')">↑</button>
+        <div></div>
+        <button class="control-btn" ontouchstart="changeDirection('LEFT')">←</button>
+        <button class="control-btn" ontouchstart="changeDirection('DOWN')">↓</button>
+        <button class="control-btn" ontouchstart="changeDirection('RIGHT')">→</button>
+    </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const gridSize = 20;
+        const gridSize = 20; // 网格尺寸
+        const pixelRatio = window.devicePixelRatio || 1;
+
         // 福字像素矩阵（11行×19列）
         const fuCharacter = [
-            [0,0,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1], // 第1行
-            [1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0], // 第2行
-            [0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0], // 第3行
-            [0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1], // 第4行
-            [0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,1,1,1,0], // 第5行
-            [0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0], // 第6行
-            [0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,1,1,1,1], // 第7行
-            [0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,1], // 第8行
-            [0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,1,1,1,1], // 第9行
-            [0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,1], // 第10行
-            [0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,1,1,1,1]  // 第11行
+            [0,0,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1],
+            [1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,0],
+            [0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1],
+            [0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,1,1,1,0],
+            [0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0],
+            [0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,1,1,1,1],
+            [0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,1],
+            [0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,1,1,1,1],
+            [0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,1],
+            [0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,1,1,1,1]
         ];
-        let snake = [{ x: 10, y: 10 }];
+
+        // 游戏参数
+        let snake = [{ x: 5, y: 5 }];
         let direction = 'RIGHT';
         let food = { x: 0, y: 0 };
-        let revealedRows = 0; // 已显示的行数
+        let revealedRows = 0;
         let gameSpeed = 500;
 
-        // 设置画布尺寸
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+        // 屏幕适配
+        function initCanvas() {
+            const width = Math.min(window.innerWidth, 400);
+            const height = Math.min(window.innerHeight, 800);
+            
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            canvas.width = width * pixelRatio;
+            canvas.height = height * pixelRatio;
+            ctx.scale(pixelRatio, pixelRatio);
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
 
-        // 绘制福字（显示已点亮的行）
+        // 绘制福字
         function drawFuCharacter() {
             ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
-            const startX = (canvas.width - fuCharacter[0].length * gridSize) / 2;
-            const startY = (canvas.height - fuCharacter.length * gridSize) / 2;
+            const startX = (canvas.width/pixelRatio - fuCharacter[0].length * gridSize) / 2;
+            const startY = (canvas.height/pixelRatio - fuCharacter.length * gridSize) / 2;
 
             for (let i = 0; i < revealedRows; i++) {
                 for (let j = 0; j < fuCharacter[i].length; j++) {
@@ -77,45 +117,44 @@
                         ctx.fillRect(
                             startX + j * gridSize,
                             startY + i * gridSize,
-                            gridSize,
-                            gridSize
+                            gridSize - 1,
+                            gridSize - 1
                         );
                     }
                 }
             }
         }
 
-        // 生成食物（随机位置）
+        // 生成食物（对齐网格）
         function generateFood() {
-            food.x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
-            food.y = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
+            const cols = Math.floor(canvas.width/pixelRatio / gridSize);
+            const rows = Math.floor(canvas.height/pixelRatio / gridSize);
+            food.x = Math.floor(Math.random() * cols) * gridSize;
+            food.y = Math.floor(Math.random() * rows) * gridSize;
         }
 
-        // 绘制蛇
-        function drawSnake() {
+        // 绘制元素
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制福字
+            drawFuCharacter();
+            
+            // 绘制蛇
             ctx.fillStyle = '#00FF00';
             snake.forEach(segment => {
-                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
+                ctx.fillRect(segment.x, segment.y, gridSize - 1, gridSize - 1);
             });
-        }
-
-        // 绘制食物（亮蓝色）
-        function drawFood() {
+            
+            // 绘制食物（方形）
             ctx.fillStyle = '#00FFFF';
-            ctx.beginPath();
-            ctx.arc(food.x + gridSize/2, food.y + gridSize/2, gridSize/2, 0, Math.PI*2);
-            ctx.fill();
+            ctx.fillRect(food.x, food.y, gridSize - 1, gridSize - 1);
         }
 
-        // 游戏主循环
+        // 游戏逻辑
         function gameLoop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawFuCharacter();
-            drawSnake();
-            drawFood();
-
             // 移动蛇头
-            const head = {x: snake[0].x, y: snake[0].y};
+            const head = { x: snake[0].x, y: snake[0].y };
             switch(direction) {
                 case 'UP': head.y -= gridSize; break;
                 case 'DOWN': head.y += gridSize; break;
@@ -124,8 +163,9 @@
             }
 
             // 碰撞检测
-            if (head.x < 0 || head.x >= canvas.width || 
-                head.y < 0 || head.y >= canvas.height ||
+            const maxX = canvas.width/pixelRatio - gridSize;
+            const maxY = canvas.height/pixelRatio - gridSize;
+            if (head.x < 0 || head.x > maxX || head.y < 0 || head.y > maxY ||
                 snake.some(s => s.x === head.x && s.y === head.y)) {
                 alert(`游戏结束！点亮了${revealedRows}行福字`);
                 resetGame();
@@ -134,31 +174,32 @@
 
             snake.unshift(head);
 
-            // 吃食物逻辑
+            // 吃食物检测
             if (head.x === food.x && head.y === food.y) {
-                revealedRows++;
-                if (revealedRows === fuCharacter.length) { // 所有行已点亮
+                revealedRows = Math.min(revealedRows + 1, fuCharacter.length);
+                if (revealedRows === fuCharacter.length) {
                     alert('福到万家！新春大吉！');
                     resetGame();
-                } else {
-                    generateFood();
+                    return;
                 }
+                generateFood();
             } else {
                 snake.pop();
             }
 
+            drawGame();
             setTimeout(gameLoop, gameSpeed);
         }
 
-        // 重置游戏
-        function resetGame() {
-            snake = [{x: 10, y: 10}];
-            direction = 'RIGHT';
-            revealedRows = 0;
-            generateFood();
+        // 方向控制
+        function changeDirection(newDir) {
+            const opposites = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' };
+            if (newDir !== opposites[direction]) {
+                direction = newDir;
+            }
         }
 
-        // 方向控制
+        // 键盘控制
         document.addEventListener('keydown', (e) => {
             const dirMap = {
                 'ArrowUp': 'UP',
@@ -166,14 +207,15 @@
                 'ArrowLeft': 'LEFT',
                 'ArrowRight': 'RIGHT'
             };
-            if (dirMap[e.key] && direction !== oppositeDir(dirMap[e.key])) {
-                direction = dirMap[e.key];
-            }
+            if (dirMap[e.key]) changeDirection(dirMap[e.key]);
         });
 
-        function oppositeDir(newDir) {
-            const opposites = {UP:'DOWN', DOWN:'UP', LEFT:'RIGHT', RIGHT:'LEFT'};
-            return opposites[newDir];
+        // 重置游戏
+        function resetGame() {
+            snake = [{ x: 5, y: 5 }];
+            direction = 'RIGHT';
+            revealedRows = 0;
+            generateFood();
         }
 
         // 初始化
