@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>手机版福字贪吃蛇</title>
+    <title>新春福字贪吃蛇</title>
     <style>
         body {
             margin: 0;
@@ -20,6 +20,7 @@
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
+            background: transparent;
         }
         .controls {
             position: fixed;
@@ -40,6 +41,7 @@
             color: white;
             font-size: 24px;
             margin: 0 auto;
+            touch-action: manipulation;
         }
         .footer {
             position: fixed;
@@ -68,7 +70,7 @@
         const ctx = canvas.getContext('2d');
         const gridSize = 20; // 网格尺寸
         const pixelRatio = window.devicePixelRatio || 1;
-
+        
         // 福字像素矩阵（11行×19列）
         const fuCharacter = [
             [0,0,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1],
@@ -85,28 +87,36 @@
         ];
 
         // 游戏参数
-        let snake = [{ x: 5, y: 5 }];
+        let snake = [{ x: 5*gridSize, y: 5*gridSize }];
         let direction = 'RIGHT';
         let food = { x: 0, y: 0 };
         let revealedRows = 0;
         let gameSpeed = 500;
+        let gameLoopId = null;
 
         // 屏幕适配
         function initCanvas() {
-            const width = Math.min(window.innerWidth, 400);
-            const height = Math.min(window.innerHeight, 800);
+            const maxWidth = Math.min(window.innerWidth, 400);
+            const maxHeight = Math.min(window.innerHeight, 800);
             
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-            canvas.width = width * pixelRatio;
-            canvas.height = height * pixelRatio;
+            // 计算符合网格的尺寸
+            const gridWidth = Math.floor(maxWidth / gridSize) * gridSize;
+            const gridHeight = Math.floor(maxHeight / gridSize) * gridSize;
+            
+            canvas.style.width = gridWidth + 'px';
+            canvas.style.height = gridHeight + 'px';
+            canvas.width = gridWidth * pixelRatio;
+            canvas.height = gridHeight * pixelRatio;
             ctx.scale(pixelRatio, pixelRatio);
         }
-        window.addEventListener('resize', initCanvas);
-        initCanvas();
 
-        // 绘制福字
-        function drawFuCharacter() {
+        // 绘制红色背景和福字
+        function drawGame() {
+            // 绘制红色背景
+            ctx.fillStyle = '#8B0000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制福字
             ctx.fillStyle = 'rgba(255, 215, 0, 0.9)';
             const startX = (canvas.width/pixelRatio - fuCharacter[0].length * gridSize) / 2;
             const startY = (canvas.height/pixelRatio - fuCharacter.length * gridSize) / 2;
@@ -123,32 +133,30 @@
                     }
                 }
             }
-        }
 
-        // 生成食物（对齐网格）
-        function generateFood() {
-            const cols = Math.floor(canvas.width/pixelRatio / gridSize);
-            const rows = Math.floor(canvas.height/pixelRatio / gridSize);
-            food.x = Math.floor(Math.random() * cols) * gridSize;
-            food.y = Math.floor(Math.random() * rows) * gridSize;
-        }
-
-        // 绘制元素
-        function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 绘制福字
-            drawFuCharacter();
-            
             // 绘制蛇
             ctx.fillStyle = '#00FF00';
             snake.forEach(segment => {
                 ctx.fillRect(segment.x, segment.y, gridSize - 1, gridSize - 1);
             });
-            
+
             // 绘制食物（方形）
             ctx.fillStyle = '#00FFFF';
             ctx.fillRect(food.x, food.y, gridSize - 1, gridSize - 1);
+        }
+
+        // 生成食物
+        function generateFood() {
+            const cols = Math.floor(canvas.width/pixelRatio / gridSize);
+            const rows = Math.floor(canvas.height/pixelRatio / gridSize);
+            
+            do {
+                food.x = Math.floor(Math.random() * cols) * gridSize;
+                food.y = Math.floor(Math.random() * rows) * gridSize;
+            } while (
+                snake.some(seg => seg.x === food.x && seg.y === food.y) ||
+                (food.x === snake[0].x && food.y === snake[0].y)
+            );
         }
 
         // 游戏逻辑
@@ -167,8 +175,7 @@
             const maxY = canvas.height/pixelRatio - gridSize;
             if (head.x < 0 || head.x > maxX || head.y < 0 || head.y > maxY ||
                 snake.some(s => s.x === head.x && s.y === head.y)) {
-                alert(`游戏结束！点亮了${revealedRows}行福字`);
-                resetGame();
+                endGame();
                 return;
             }
 
@@ -178,8 +185,7 @@
             if (head.x === food.x && head.y === food.y) {
                 revealedRows = Math.min(revealedRows + 1, fuCharacter.length);
                 if (revealedRows === fuCharacter.length) {
-                    alert('福到万家！新春大吉！');
-                    resetGame();
+                    endGame(true);
                     return;
                 }
                 generateFood();
@@ -188,7 +194,14 @@
             }
 
             drawGame();
-            setTimeout(gameLoop, gameSpeed);
+            gameLoopId = setTimeout(gameLoop, gameSpeed);
+        }
+
+        // 结束游戏
+        function endGame(success = false) {
+            clearTimeout(gameLoopId);
+            alert(success ? '福到万家！新春大吉！' : `游戏结束！点亮了${revealedRows}行福字`);
+            resetGame();
         }
 
         // 方向控制
@@ -199,28 +212,26 @@
             }
         }
 
-        // 键盘控制
-        document.addEventListener('keydown', (e) => {
-            const dirMap = {
-                'ArrowUp': 'UP',
-                'ArrowDown': 'DOWN',
-                'ArrowLeft': 'LEFT',
-                'ArrowRight': 'RIGHT'
-            };
-            if (dirMap[e.key]) changeDirection(dirMap[e.key]);
-        });
-
         // 重置游戏
         function resetGame() {
-            snake = [{ x: 5, y: 5 }];
+            snake = [{ x: 5*gridSize, y: 5*gridSize }];
             direction = 'RIGHT';
             revealedRows = 0;
             generateFood();
+            if(gameLoopId) clearTimeout(gameLoopId);
+            gameLoopId = setTimeout(gameLoop, 1000);
         }
 
         // 初始化
+        initCanvas();
+        window.addEventListener('resize', initCanvas);
         generateFood();
+        drawGame();
         gameLoop();
+
+        // 防止触摸默认行为
+        document.addEventListener('touchstart', (e) => e.preventDefault());
+        document.addEventListener('touchmove', (e) => e.preventDefault());
     </script>
 </body>
 </html>
